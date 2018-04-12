@@ -1,0 +1,73 @@
+#!/usr/bin/env php
+<?php
+function getPrintablePrc(float $prc): string
+{
+	return (string)(round($prc * 100, 1));
+}
+
+function printRed(string $text): void
+{
+	echo "\033[01;31m{$text}\033[0m";
+}
+
+function printGreen(string $text): void
+{
+	echo "\033[00;32m{$text}\033[0m";
+}
+
+
+
+$inputFile  = $argv[1] ?? '/build/logs/clover.xml';
+$expected = $argv[2] ?? 0.95;
+$dir		= getcwd();
+
+if ((string)((int)$inputFile) == $inputFile)
+{
+	$expected = $inputFile;
+	$inputFile = '/build/logs/clover.xml';
+}
+
+$expected = (float)$expected;
+
+if ($expected > 1)
+{
+	$expected = $expected / 100; 
+}
+
+$inputFile = $dir . $inputFile;
+
+if (!file_exists($inputFile)) 
+{
+	throw new InvalidArgumentException('Invalid input file provided. File ' . $inputFile . ' does not exists');
+}
+else if ($expected > 1.0 || $expected <= 0.0) 
+{
+	throw new InvalidArgumentException('Invalid value supplied as the expected percentage');
+}
+
+$xml				= new SimpleXMLElement(file_get_contents($inputFile));
+$metrics			= $xml->xpath('//metrics');
+$totalElements		= 0;
+$checkedElements	= 0;
+
+foreach ($metrics as $metric) 
+{
+	$totalElements		+= (int)$metric['elements'];
+	$checkedElements	+= (int)$metric['coveredelements'];
+}
+
+$coverage = ((float)$checkedElements / (float)$totalElements);
+
+if ($coverage < $expected) 
+{
+    printRed('Expecting ' . getPrintablePrc($expected) . '%, but only ' . 
+		getPrintablePrc($coverage). '% covered' . PHP_EOL);
+    
+    exit(1);
+}
+else
+{
+	printGreen('Total of ' . getPrintablePrc($coverage) . '% code covered. OK' . PHP_EOL);
+	exit(0);
+}
+

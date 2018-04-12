@@ -1,0 +1,16 @@
+{
+	"name": "oktopost/unit-cover",
+	"authors": 
+	[
+		{
+			"name": "Alexey Puchkov",
+			"email": "alexey@oktopost.com",
+			"role": "Developer"
+		}
+	],
+	"minimum-stability": "stable",
+	"require": 
+	{
+		"php": ">=7.1"
+	}
+}
